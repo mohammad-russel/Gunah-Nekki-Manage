@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Guna & Neki Tracker - Premium</title>
+  <script src="https://cdn.jsdelivr.net/npm/jquery@3.7.1/dist/jquery.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+    }
+    .glass-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px);
+      -webkit-backdrop-filter: blur(10px);
+      border-radius: 12px;
+      box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.18);
+    }
+    .neki-gradient {
+      background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+    .gunah-gradient {
+      background: linear-gradient(135deg, #ff758c 0%, #ff7eb3 100%);
+    }
+    .status-gradient {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+    .select-arrow {
+      background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+      background-position: right 0.5rem center;
+      background-repeat: no-repeat;
+      background-size: 1.5em 1.5em;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px -5px rgba(102, 126, 234, 0.4);
+    }
+  </style>
+</head>
+<body class="min-h-screen">
+<div class="max-w-5xl mx-auto p-4 md:p-6">
+  <!-- Header -->
+  <div class="text-center mb-8">
+    <h1 class="text-4xl font-bold mb-2 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600">গুনাহ ও নেকি ট্র্যাকার</h1>
+    <p class="text-gray-600">আপনার দৈনন্দিন ভালো ও খারাপ কাজের হিসাব রাখুন</p>
+  </div>
+
+  <!-- Form Section -->
+  <div class="glass-card p-6 mb-8">
+    <h2 class="text-xl font-semibold mb-4 text-gray-700 flex items-center">
+      <i class="fas fa-plus-circle mr-2 text-purple-500"></i> নতুন এন্ট্রি যোগ করুন
+    </h2>
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">ধরন</label>
+        <select id="type" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent select-arrow">
+          <option value="neki">নেকি</option>
+          <option value="gunah">গুনাহ</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">কর্ম নির্বাচন করুন</label>
+        <select id="actionList" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent select-arrow"></select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-1">স্বয়ংক্রিয় পয়েন্ট</label>
+        <input type="number" id="amount" class="w-full p-3 border rounded-lg bg-gray-50 focus:ring-2 focus:ring-purple-500 focus:border-transparent" readonly>
+      </div>
+    </div>
+    <button id="submitBtn" class="btn-primary text-white px-6 py-3 rounded-lg mt-4 w-full font-medium shadow-md">
+      <i class="fas fa-save mr-2"></i> জমা দিন
+    </button>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+    <div class="neki-gradient text-white p-6 rounded-xl shadow-lg transform transition hover:scale-105">
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="text-sm font-medium opacity-80">মোট নেকি</p>
+          <p id="totalNeki" class="text-3xl font-bold">0</p>
+        </div>
+        <i class="fas fa-hands-helping text-4xl opacity-30"></i>
+      </div>
+      <div class="mt-4 pt-4 border-t border-white border-opacity-20">
+        <p class="text-xs font-medium">আপনার ভালো কাজের সংগ্রহ</p>
+      </div>
+    </div>
+    
+    <div class="status-gradient text-white p-6 rounded-xl shadow-lg transform transition hover:scale-105">
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="text-sm font-medium opacity-80">অবস্থা</p>
+          <p id="winStatus" class="text-3xl font-bold">-</p>
+        </div>
+        <i class="fas fa-scale-balanced text-4xl opacity-30"></i>
+      </div>
+      <div class="mt-4 pt-4 border-t border-white border-opacity-20">
+        <p class="text-xs font-medium">নেকি ও গুনাহর ভারসাম্য</p>
+      </div>
+    </div>
+    
+    <div class="gunah-gradient text-white p-6 rounded-xl shadow-lg transform transition hover:scale-105">
+      <div class="flex justify-between items-center">
+        <div>
+          <p class="text-sm font-medium opacity-80">মোট গুনাহ</p>
+          <p id="totalGunah" class="text-3xl font-bold">0</p>
+        </div>
+        <i class="fas fa-warning text-4xl opacity-30"></i>
+      </div>
+      <div class="mt-4 pt-4 border-t border-white border-opacity-20">
+        <p class="text-xs font-medium">খারাপ কাজের পরিমাণ</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Entries Table -->
+  <div class="glass-card p-6 mb-8">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-gray-700 flex items-center">
+        <i class="fas fa-history mr-2 text-purple-500"></i> সর্বশেষ ১০টি এন্ট্রি
+      </h2>
+      <button onclick="clearAllEntries()" class="text-sm text-red-500 hover:text-red-700 flex items-center">
+        <i class="fas fa-trash-alt mr-1"></i> সব মুছুন
+      </button>
+    </div>
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-gray-200">
+        <thead class="bg-gray-50">
+          <tr>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ধরন</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">কর্ম</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">পয়েন্ট</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">তারিখ</th>
+            <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">অ্যাকশন</th>
+          </tr>
+        </thead>
+        <tbody id="entryTable" class="bg-white divide-y divide-gray-200"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Chart Section -->
+  <div class="glass-card p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h2 class="text-xl font-semibold text-gray-700 flex items-center">
+        <i class="fas fa-chart-line mr-2 text-purple-500"></i> কার্যক্রম বিশ্লেষণ
+      </h2>
+      <select id="filter" class="p-2 border rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent select-arrow text-sm">
+        <option value="week">গত সপ্তাহ</option>
+        <option value="month">গত মাস</option>
+        <option value="year">গত বছর</option>
+        <option value="all">সর্বমোট</option>
+      </select>
+    </div>
+    <canvas id="activityChart" height="120"></canvas>
+  </div>
+
+  <!-- Footer -->
+  <div class="text-center mt-8 text-gray-500 text-sm">
+    <p>© 2023 Guna & Neki Tracker | Premium Version</p>
+  </div>
+</div>
+
+<script>
+  const nekiList = {
+    "নামাজ আদায় করেছে": 10,
+    "দরিদ্রকে সাহায্য করেছে": 8,
+    "সদাকাহ (দান) দিয়েছে": 12,
+    "কুরআন পাঠ করেছে": 10,
+    "রোজা রেখেছে": 15,
+    "ভদ্রভাবে কথা বলেছে": 5,
+    "মাতাপিতাকে সম্মান করেছে": 10,
+    "গরিবকে খাবার দিয়েছে": 10,
+    "সত্য কথা বলেছে": 7,
+    "সালাম দিয়েছে": 3,
+    "অসুস্থকে দেখতে গিয়েছে": 9,
+    "খারাপ কথায় সংযত থেকেছে": 6,
+    "দোয়া করেছে": 6,
+    "অন্যদের ক্ষমা করেছে": 8,
+    "জ্ঞান বিতরণ করেছে": 9,
+    "পরিবারের যত্ন নিয়েছে": 8,
+    "আত্মীয়দের সঙ্গে সম্পর্ক বজায় রেখেছে": 9,
+    "ধৈর্য ধরেছে": 7,
+    "প্রাণীর প্রতি দয়া দেখিয়েছে": 6,
+    "তওবা করেছে": 10,
+    "হজ/উমরা করেছে": 20,
+    "পরিবেশ পরিচ্ছন্ন রেখেছে": 6,
+    "ইসলামের দাওয়াত দিয়েছে": 8,
+    "কৃতজ্ঞতা প্রকাশ করেছে": 5,
+    "বৃদ্ধদের সাহায্য করেছে": 8,
+    "আত্মম্ভরিতা পরিহার করেছে": 6,
+    "নম্র ব্যবহার করেছে": 8,
+    "পবিত্রতা রক্ষা করেছে": 7,
+    "জীবন সুন্দরভাবে পরিচালনা করেছে": 6,
+    "পরীক্ষায় অসততা করেনি": 7
+  };
+
+  const gunahList = {
+    "ফরজ নামাজ মিস করেছে": 15,
+    "মিথ্যা বলেছে": 10,
+    "গীবত (পরনিন্দা) করেছে": 15,
+    "কাউকে অপমান করেছে": 10,
+    "অশ্লীল কনটেন্ট দেখেছে": 15,
+    "চুরি/প্রতারণা করেছে": 20,
+    "মাতাপিতার অবাধ্য হয়েছে": 10,
+    "সময় নষ্ট করেছে": 4,
+    "অহংকার দেখিয়েছে": 5,
+    "অতিরিক্ত খেয়েছে": 4,
+    "রাগ নিয়ন্ত্রণ করতে পারেনি": 6,
+    "মিথ্যা গুজব ছড়িয়েছে": 7,
+    "প্রমিজ ভঙ্গ করেছে": 6,
+    "ঘুষ দিয়েছে": 9,
+    "রিয়া (শোঅফ) করেছে": 5,
+    "সুদ লেনদেন করেছে": 10,
+    "পরীক্ষায় অসততা করেছে": 8,
+    "কারো প্রতি হিংসা পোষণ করেছে": 6,
+    "পরিবারের প্রতি দায়িত্বহীন ছিল": 8,
+    "প্রাণীর প্রতি নিষ্ঠুরতা করেছে": 8,
+    "সালাত নিয়ে হাসি ঠাট্টা করেছে": 10,
+    "অযথা কথা বলেছে": 5,
+    "মানহানি করেছে": 7,
+    "রাস্তায় বিরক্তি সৃষ্টি করেছে": 6,
+    "আল্লাহর আদেশ অমান্য করেছে": 10,
+    "অতিরিক্ত ঘুমিয়েছে": 3,
+    "অন্যের অধিকার হরণ করেছে": 9,
+    "বেহায়াপনা করেছে": 10,
+    "অশ্লীল পোশাক পরেছে": 7,
+    "অপরিষ্কার থেকেছে": 4
+  };
+
+  let data = JSON.parse(localStorage.getItem("gunaNekiData") || "[]");
+  let chart = null;
+
+  const saveData = () => localStorage.setItem("gunaNekiData", JSON.stringify(data));
+
+  const populateActions = () => {
+    const type = $("#type").val();
+    const list = type === "neki" ? nekiList : gunahList;
+    $("#actionList").html(Object.keys(list).map(k => `<option value="${k}">${k}</option>`));
+    $("#amount").val(list[$("#actionList").val()]);
+  };
+
+  const updateStatus = () => {
+    const totalNeki = data.filter(d => d.type === "neki").reduce((sum, d) => sum + d.amount, 0);
+    const totalGunah = data.filter(d => d.type === "gunah").reduce((sum, d) => sum + d.amount, 0);
+    const status = totalNeki > totalGunah ? "নেকি এগিয়ে" : totalGunah > totalNeki ? "গুনাহ এগিয়ে" : "সমতা";
+    $("#winStatus").text(status);
+    
+    // Update status card color based on result
+    const statusCard = $(".status-gradient");
+    statusCard.removeClass("bg-gradient-to-r from-green-500 to-blue-500 from-red-500 to-pink-500 from-purple-500 to-indigo-500");
+    
+    if (totalNeki > totalGunah) {
+      statusCard.addClass("bg-gradient-to-r from-green-500 to-blue-500");
+    } else if (totalGunah > totalNeki) {
+      statusCard.addClass("bg-gradient-to-r from-red-500 to-pink-500");
+    } else {
+      statusCard.addClass("bg-gradient-to-r from-purple-500 to-indigo-500");
+    }
+  };
+
+  const updateTable = () => {
+    const last10 = [...data].slice(-10).reverse();
+    const table = last10.map(entry => `
+      <tr class="${entry.type === 'neki' ? 'bg-blue-50' : 'bg-red-50'} hover:bg-gray-100 transition">
+        <td class="px-6 py-4 whitespace-nowrap">
+          <span class="px-2 py-1 text-xs rounded-full ${entry.type === 'neki' ? 'bg-blue-100 text-blue-800' : 'bg-red-100 text-red-800'}">
+            ${entry.type === 'neki' ? 'নেকি' : 'গুনাহ'}
+          </span>
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${entry.note}</td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm ${entry.type === 'neki' ? 'text-blue-600 font-medium' : 'text-red-600 font-medium'}">
+          ${entry.amount}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+          ${new Date(entry.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+        </td>
+        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
+          <button onclick="deleteEntry('${entry.id}')" class="text-red-600 hover:text-red-900 flex items-center">
+            <i class="fas fa-trash-alt mr-1"></i> মুছুন
+          </button>
+        </td>
+      </tr>
+    `).join("");
+    $("#entryTable").html(table);
+
+    const totalNeki = data.filter(d => d.type === "neki").reduce((sum, d) => sum + d.amount, 0);
+    const totalGunah = data.filter(d => d.type === "gunah").reduce((sum, d) => sum + d.amount, 0);
+    $("#totalNeki").text(totalNeki);
+    $("#totalGunah").text(totalGunah);
+    updateStatus();
+  };
+
+  const deleteEntry = (id) => {
+    if (confirm("আপনি কি নিশ্চিতভাবে এই এন্ট্রিটি মুছতে চান?")) {
+      data = data.filter(d => d.id !== id);
+      saveData();
+      updateTable();
+      drawChart();
+      
+      // Show notification
+      showNotification("এন্ট্রি সফলভাবে মুছে ফেলা হয়েছে", "success");
+    }
+  };
+
+  const clearAllEntries = () => {
+    if (confirm("আপনি কি নিশ্চিতভাবে সব এন্ট্রি মুছতে চান? এই কাজটি পূর্বাবস্থায় ফেরানো যাবে না।")) {
+      data = [];
+      saveData();
+      updateTable();
+      drawChart();
+      
+      // Show notification
+      showNotification("সমস্ত এন্ট্রি সফলভাবে মুছে ফেলা হয়েছে", "success");
+    }
+  };
+
+  const drawChart = () => {
+    const ctx = document.getElementById("activityChart").getContext("2d");
+    if (chart) chart.destroy();
+
+    const filter = $("#filter").val();
+    let fromDate = new Date();
+    if (filter === "week") fromDate.setDate(fromDate.getDate() - 7);
+    else if (filter === "month") fromDate.setMonth(fromDate.getMonth() - 1);
+    else if (filter === "year") fromDate.setFullYear(fromDate.getFullYear() - 1);
+    else fromDate = new Date(0);
+
+    const filtered = data.filter(d => new Date(d.date) >= fromDate);
+    const labels = [...new Set(filtered.map(d => new Date(d.date).toLocaleDateString('en-GB')))].sort();
+    const getAmount = (type, label) =>
+      filtered.filter(d => d.type === type && new Date(d.date).toLocaleDateString('en-GB') === label)
+              .reduce((sum, d) => sum + d.amount, 0);
+
+    const nekiData = labels.map(label => getAmount("neki", label));
+    const gunahData = labels.map(label => getAmount("gunah", label));
+
+    chart = new Chart(ctx, {
+      type: "bar",
+      data: {
+        labels,
+        datasets: [
+          { 
+            label: "নেকি", 
+            data: nekiData, 
+            backgroundColor: "rgba(54, 162, 235, 0.7)",
+            borderColor: "rgba(54, 162, 235, 1)",
+            borderWidth: 1,
+            borderRadius: 4
+          },
+          { 
+            label: "গুনাহ", 
+            data: gunahData, 
+            backgroundColor: "rgba(255, 99, 132, 0.7)",
+            borderColor: "rgba(255, 99, 132, 1)",
+            borderWidth: 1,
+            borderRadius: 4
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            position: 'top',
+            labels: {
+              font: {
+                family: "'Poppins', sans-serif"
+              }
+            }
+          },
+          tooltip: {
+            callbacks: {
+              label: context => `${context.dataset.label}: ${context.parsed.y}`
+            }
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: "rgba(0, 0, 0, 0.05)"
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            }
+          }
+        }
+      }
+    });
+  };
+
+  const showNotification = (message, type) => {
+    const colors = {
+      success: "bg-green-500",
+      error: "bg-red-500",
+      info: "bg-blue-500"
+    };
+    
+    const notification = $(`
+      <div class="fixed bottom-4 right-4 ${colors[type]} text-white px-4 py-2 rounded-lg shadow-lg flex items-center transform transition-all duration-300 translate-y-10 opacity-0">
+        <i class="fas ${type === 'success' ? 'fa-check-circle' : type === 'error' ? 'fa-exclamation-circle' : 'fa-info-circle'} mr-2"></i>
+        ${message}
+      </div>
+    `);
+    
+    $("body").append(notification);
+    
+    setTimeout(() => {
+      notification.removeClass("translate-y-10 opacity-0").addClass("translate-y-0 opacity-100");
+    }, 10);
+    
+    setTimeout(() => {
+      notification.removeClass("translate-y-0 opacity-100").addClass("translate-y-10 opacity-0");
+      setTimeout(() => notification.remove(), 300);
+    }, 3000);
+  };
+
+  $("#type").on("change", () => {
+    populateActions();
+  });
+
+  $("#actionList").on("change", () => {
+    const type = $("#type").val();
+    const selected = $("#actionList").val();
+    $("#amount").val((type === "neki" ? nekiList : gunahList)[selected]);
+  });
+
+  $("#submitBtn").on("click", () => {
+    const type = $("#type").val();
+    const note = $("#actionList").val();
+    const amount = parseInt($("#amount").val());
+
+    if (!note || isNaN(amount)) {
+      showNotification("দয়া করে একটি বৈধ কর্ম নির্বাচন করুন", "error");
+      return;
+    }
+
+    data.push({
+      id: crypto.randomUUID(),
+      type,
+      note,
+      amount,
+      date: new Date().toISOString()
+    });
+    saveData();
+    updateTable();
+    drawChart();
+    
+    // Show success notification
+    showNotification("এন্ট্রি সফলভাবে সংরক্ষণ করা হয়েছে", "success");
+    
+    // Reset form
+    $("#actionList").val($("#actionList option:first").val());
+    $("#amount").val((type === "neki" ? nekiList : gunahList)[$("#actionList").val()]);
+  });
+
+  $("#filter").on("change", drawChart);
+
+  $(document).ready(() => {
+    populateActions();
+    updateTable();
+    drawChart();
+  });
+</script>
+</body>
+</html>
